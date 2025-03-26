@@ -25,36 +25,42 @@ def send_request(action, parameters):
 
 def list_parties():
     response = send_request("list", [])
-    if response:
-        messagebox.showinfo("Parties", f"ID des parties: {response['response']['id_parties']}")
+    if response and response["status"] == "OK":
+        parties = response["response"]["id_parties"]
+        for widget in parties_frame.winfo_children():
+            widget.destroy()
+        for id_party in parties:
+            tk.Label(parties_frame, text=f"Partie {id_party}:").pack(anchor='w')
+            tk.Button(parties_frame, text="S'inscrire", command=lambda id=id_party: subscribe_to_party(id)).pack(anchor='w')
+    else:
+        messagebox.showinfo("Parties", "Aucune partie disponible.")
 
-def subscribe_to_party():
-    player = entry_player.get()
-    id_party = entry_id_party.get()
+def subscribe_to_party(id_party):
+    player = entry_player.get() if entry_player.get() else f"Player_{id_party}"
     response = send_request("subscribe", [{"player": player, "id_party": id_party}])
     if response:
         messagebox.showinfo("Inscription", f"Rôle: {response['response']['role']}, ID Joueur: {response['response']['id_player']}")
 
 def create_gui():
+    global parties_frame
+    global entry_player
+
     root = tk.Tk()
     root.title("Client TCP Tkinter")
 
+    # Frame pour afficher les parties
+    parties_frame = tk.Frame(root)
+    parties_frame.pack(pady=5)
+
+    # Bouton pour lister les parties
     tk.Button(root, text="Lister les parties", command=list_parties).pack(pady=5)
 
-    tk.Label(root, text="Nom du joueur:").pack()
-    global entry_player
+    # Champ de saisie pour le pseudo du joueur
+    tk.Label(root, text="Nom du joueur (optionnel):").pack()
     entry_player = tk.Entry(root)
     entry_player.pack()
-
-    tk.Label(root, text="ID de la partie:").pack()
-    global entry_id_party
-    entry_id_party = tk.Entry(root)
-    entry_id_party.pack()
-
-    tk.Button(root, text="S'inscrire à une partie", command=subscribe_to_party).pack(pady=5)
 
     root.mainloop()
 
 if __name__ == "__main__":
     create_gui()
- 
