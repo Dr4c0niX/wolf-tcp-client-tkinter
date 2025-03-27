@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 # Configuration de la connexion (port mis à jour pour correspondre au serveur)
-HOST, PORT = "localhost", 9999
+HOST, PORT = "localhost", 8888
 
 def send_request(action, parameters):
     """Envoie une requête au serveur et retourne la réponse."""
