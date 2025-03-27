@@ -3,8 +3,8 @@ import json
 import tkinter as tk
 from tkinter import messagebox
 
-# Configuration de la connexion
-HOST, PORT = "localhost", 5000
+# Configuration de la connexion (port mis à jour pour correspondre au serveur)
+HOST, PORT = "localhost", 9999
 
 def send_request(action, parameters):
     """Envoie une requête au serveur et retourne la réponse."""
@@ -37,9 +37,17 @@ def list_parties():
 
 def subscribe_to_party(id_party):
     player = entry_player.get() if entry_player.get() else f"Player_{id_party}"
-    response = send_request("subscribe", [{"player": player, "id_party": id_party}])
-    if response:
+    parameters = [
+        {
+            "player": player, 
+            "id_party": id_party  # Utiliser les clés attendues par le serveur
+        }
+    ]
+    response = send_request("subscribe", parameters)
+    if response and response["status"] == "OK":
         messagebox.showinfo("Inscription", f"Rôle: {response['response']['role']}, ID Joueur: {response['response']['id_player']}")
+    else:
+        messagebox.showerror("Erreur", "L'inscription a échoué.")
 
 def create_gui():
     global parties_frame
