@@ -4,6 +4,9 @@ from tkinter import messagebox, ttk
 import tkinter.font as tkFont
 import socket
 import json
+import os
+import sys
+import subprocess
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 8888
@@ -18,6 +21,7 @@ DARK_FRAME = "#363636"
 # Variable globale pour stocker le choix de partie
 selected_party_id = None
 selected_role = None
+root = None  # Variable globale pour stocker la référence à la fenêtre principale
 
 def list_parties():
     global selected_party_id
@@ -47,8 +51,8 @@ def list_parties():
             main_frame = tk.Frame(parties_frame, bg=DARK_FRAME, bd=2, relief=tk.RIDGE)
             main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
             
-            # Modifier les largeurs des colonnes pour un affichage plus large
-            col_widths = [4, 20, 8, 8, 8, 8, 8, 8]  # Largeurs augmentées
+            # Optimiser les largeurs des colonnes - version plus compacte
+            col_widths = [3, 12, 5, 5, 5, 5, 5, 5]  # Largeurs plus compactes
             headers = ["Sel", "Nom", "Grille", "Joueurs", "Vill.", "Loups", "Tours", "Durée"]
 
             # Configuration du tableau avec défilement horizontal et vertical
@@ -222,6 +226,11 @@ def subscribe_to_party():
         messagebox.showerror("Erreur", f"Erreur lors de la connexion au serveur: {e}")
 
 def start_solo_game():
+    """
+    Lance une partie en mode solo dans une interface Tkinter
+    """
+    global root  # Pour pouvoir masquer/réafficher la fenêtre principale
+    
     player_name = entry_player.get().strip()
     role = selected_role.get()
 
@@ -232,31 +241,35 @@ def start_solo_game():
     if not role:
         messagebox.showinfo("Erreur", "Veuillez choisir un rôle.")
         return
-
+    
+    # Sauvegarder temporairement la fenêtre principale
+    root.withdraw()
+    
     try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((SERVER_HOST, SERVER_PORT))
-            data = {
-                "player_name": player_name,
-                "role_preference": role,
-                "solo_mode": True
-            }
-            request = json.dumps({"action": "create_solo_game", **data})
-            s.sendall(request.encode('utf-8'))
-            response = s.recv(4096).decode('utf-8')
-            result = json.loads(response)
-            messagebox.showinfo("Partie Solo", f"Partie solo créée ! ID Partie: {result.get('id_party')}, ID Joueur: {result.get('id_player')}")
-            list_parties()
+        # Chemin vers le script du jeu en version Tkinter
+        script_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game-local-tk.py")
+        
+        # Convertir loup-garou en loup pour compatibilité
+        actual_role = "villageois" if role == "villageois" else "loup"
+        
+        # Créer un processus pour exécuter le jeu avec interface Tkinter
+        process = subprocess.Popen([sys.executable, script_path], 
+                                  env=dict(os.environ, PLAYER_NAME=player_name, PLAYER_ROLE=role))
+        
+        # Attendre que le processus se termine
+        process.wait()
     except Exception as e:
-        messagebox.showerror("Erreur", f"Erreur lors de la connexion au serveur: {e}")
+        messagebox.showerror("Erreur", f"Impossible de lancer le jeu solo: {e}")
+    finally:
+        # Réafficher la fenêtre principale
+        root.deiconify()
 
 def create_gui():
-    global parties_frame, entry_player, default_font, selected_role
+    global parties_frame, entry_player, default_font, selected_role, root  # Ajout de root ici
 
     root = tk.Tk()
     root.title("Client Loup-Garou")
-    # Augmenter la taille de la fenêtre pour accommoder les tableaux plus larges
-    root.geometry("1200x700")  # Taille augmentée (ancienne: 1000x650)
+    root.geometry("1000x650")  # Fenêtre plus grande pour une meilleure visibilité
     root.configure(bg=DARK_BG)
         # Rendre la fenêtre redimensionnable et gérer l'expansion des widgets
     root.grid_rowconfigure(1, weight=1)
@@ -269,8 +282,8 @@ def create_gui():
     style.configure("TButton", background=DARK_BUTTON, foreground=DARK_FG)
     style.configure("TScrollbar", background=DARK_BG, troughcolor=DARK_FRAME, arrowcolor=DARK_FG)
 
-    # Définition d'une police par défaut légèrement plus petite pour permettre plus de contenu
-    default_font = tkFont.Font(family="Helvetica", size=10)  # Taille réduite pour permettre plus de données
+    # Définition d'une police par défaut
+    default_font = tkFont.Font(family="Helvetica", size=11)
 
     # Frame titre
     title_frame = tk.Frame(root, bg=DARK_BG, pady=10)
