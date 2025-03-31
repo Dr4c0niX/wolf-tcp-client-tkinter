@@ -1,3 +1,4 @@
+#wolf-tcp-client-tkinter/tcpclient.py
 import tkinter as tk
 from tkinter import messagebox, ttk
 import tkinter.font as tkFont
@@ -41,31 +42,33 @@ def list_parties():
 
             # Initialiser les variables pour le suivi des erreurs
             failed_parties = []
-            main_frame = None
 
-            # Créer le cadre principal même si aucune donnée n'est chargée
+            # Créer le cadre principal avec défilement
             main_frame = tk.Frame(parties_frame, bg=DARK_FRAME, bd=2, relief=tk.RIDGE)
             main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            
+            # Optimiser les largeurs des colonnes - version plus compacte
+            col_widths = [3, 12, 5, 5, 5, 5, 5, 5]  # Largeurs plus compactes
+            headers = ["Sel", "Nom", "Grille", "Joueurs", "Vill.", "Loups", "Tours", "Durée"]
 
-            # Création des en-têtes de tableau
-            col_widths = [10, 25, 10, 12, 12, 12]
-            headers = ["Sélection", "Nom de partie", "Grille", "Max joueurs", "Villageois", "Loups-garous"]
-
-            # Configuration du tableau
+            # Configuration du tableau avec défilement horizontal et vertical
             canvas = tk.Canvas(main_frame, bg=DARK_FRAME, highlightthickness=0)
-            scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+            v_scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+            h_scrollbar = ttk.Scrollbar(main_frame, orient="horizontal", command=canvas.xview)
+            
+            # Tableau en grid qui sera contenu dans le canvas
             table_frame = tk.Frame(canvas, bg=DARK_FRAME)
 
-            # Configuration des colonnes
-            for i, width in enumerate(col_widths):
-                table_frame.columnconfigure(i, minsize=width*7)
+            # Configuration des colonnes avec poids
+            for i in range(len(col_widths)):
+                table_frame.columnconfigure(i, weight=col_widths[i])
 
             # Ajout des en-têtes
             for i, (header, width) in enumerate(zip(headers, col_widths)):
-                header_cell = tk.Label(table_frame, text=header, width=width,
+                header_cell = tk.Label(table_frame, text=header, 
                                       bg=DARK_HIGHLIGHT, fg=DARK_FG,
                                       relief="groove", bd=2, font=default_font)
-                header_cell.grid(row=0, column=i, sticky="nsew")
+                header_cell.grid(row=0, column=i, sticky="nsew", padx=1)
 
             # Séparateur
             separator = tk.Frame(table_frame, height=2, bg=DARK_FG)
@@ -78,6 +81,7 @@ def list_parties():
             # Traitement des parties
             selected_party_id = tk.IntVar(value=-1)
             row_index = 2
+            
             for party_id in parties_info["id_parties"]:
                 party_details = None
                 if str(party_id) in all_parties_details:
@@ -89,23 +93,32 @@ def list_parties():
                     failed_parties.append(party_id)
                     continue
 
-                # Création des éléments d'interface utilisateur pour cette partie
-                select_var = tk.BooleanVar()
-                select_checkbox = tk.Checkbutton(table_frame, variable=select_var, bg=DARK_FRAME, fg=DARK_FG,
-                                                 activebackground=DARK_FRAME, activeforeground=DARK_FG,
-                                                 selectcolor=DARK_HIGHLIGHT, command=lambda p_id=party_id: selected_party_id.set(p_id))
-                select_checkbox.grid(row=row_index, column=0, sticky="w")
+                # Checkbox pour sélectionner une partie
+                select_checkbox = tk.Checkbutton(table_frame, bg=DARK_FRAME, fg=DARK_FG,
+                                             activebackground=DARK_FRAME, activeforeground=DARK_FG,
+                                             selectcolor=DARK_HIGHLIGHT, command=lambda p_id=party_id: selected_party_id.set(p_id))
+                select_checkbox.grid(row=row_index, column=0, sticky="nsew", padx=1)
 
-                tk.Label(table_frame, text=party_details["title_party"], width=col_widths[1],
-                         bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=1, sticky="w")
-                tk.Label(table_frame, text=party_details["grid_size"], width=col_widths[2],
-                         bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=2, sticky="w")
-                tk.Label(table_frame, text=party_details["max_players"], width=col_widths[3],
-                         bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=3, sticky="w")
-                tk.Label(table_frame, text=party_details["villagers_count"], width=col_widths[4],
-                         bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=4, sticky="w")
-                tk.Label(table_frame, text=party_details["werewolves_count"], width=col_widths[5],
-                         bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=5, sticky="w")
+                # Affichage des informations de partie avec ellipsis pour les textes longs
+                title_text = party_details["title_party"]
+                if len(title_text) > 12:  # Tronquer les titres trop longs
+                    title_text = title_text[:9] + "..."
+                
+                # Créer des étiquettes avec un fond stable et s'adaptant à l'espace disponible
+                tk.Label(table_frame, text=title_text, 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=1, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=f"{party_details['grid_rows']}x{party_details['grid_cols']}",
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=2, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=party_details["max_players"], 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=3, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=party_details["villagers_count"], 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=4, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=party_details["werewolves_count"], 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=5, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=party_details["max_turns"], 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=6, sticky="nsew", padx=1)
+                tk.Label(table_frame, text=f"{party_details['turn_duration']}s", 
+                       bg=DARK_FRAME, fg=DARK_FG, font=default_font).grid(row=row_index, column=7, sticky="nsew", padx=1)
 
                 row_index += 1
 
@@ -118,10 +131,28 @@ def list_parties():
             else:
                 # Configuration du défilement
                 canvas.create_window((0, 0), window=table_frame, anchor='nw')
+                
+                # Mise à jour obligatoire pour obtenir les dimensions correctes
                 table_frame.update_idletasks()
-                canvas.configure(scrollregion=canvas.bbox("all"), yscrollcommand=scrollbar.set)
+                
+                # Configuration du canvas et des barres de défilement
+                canvas.configure(
+                    scrollregion=canvas.bbox("all"),
+                    yscrollcommand=v_scrollbar.set,
+                    xscrollcommand=h_scrollbar.set
+                )
+                
+                # Placement des barres de défilement
                 canvas.pack(side="left", fill="both", expand=True)
-                scrollbar.pack(side="right", fill="y")
+                v_scrollbar.pack(side="right", fill="y")
+                h_scrollbar.pack(side="bottom", fill="x")
+
+                # Ajuster automatiquement la taille du canvas quand la fenêtre change
+                def on_configure(event):
+                    # Mettre à jour la région de défilement pour s'adapter à la taille
+                    canvas.configure(scrollregion=canvas.bbox("all"))
+                
+                canvas.bind('<Configure>', on_configure)
 
             # Affichage des erreurs
             if failed_parties:
@@ -224,8 +255,12 @@ def create_gui():
 
     root = tk.Tk()
     root.title("Client Loup-Garou")
-    root.geometry("900x600")
+    root.geometry("1000x650")  # Fenêtre plus grande pour une meilleure visibilité
     root.configure(bg=DARK_BG)
+        # Rendre la fenêtre redimensionnable et gérer l'expansion des widgets
+    root.grid_rowconfigure(1, weight=1)
+    root.grid_columnconfigure(0, weight=1)
+    
 
     # Style pour les widgets ttk
     style = ttk.Style()
