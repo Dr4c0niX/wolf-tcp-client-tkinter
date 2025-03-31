@@ -201,7 +201,6 @@ def start_solo_game():
         messagebox.showinfo("Erreur", "Veuillez choisir un rôle.")
         return
 
-<<<<<<< HEAD
     try:
         # Requête pour créer une nouvelle partie solo
         data = {
@@ -221,28 +220,6 @@ def start_solo_game():
         messagebox.showerror("Erreur", f"Erreur lors de la connexion au serveur: {e}")
 
 def create_gui():
-=======
-    parameters = {
-        "player_name": player_name,
-        "role_preference": role,
-        "solo_mode": True
-    }
-
-    response = send_request("create_solo_game", parameters)
-    if response and response.get("status") == "OK":
-        result = response["response"]
-        messagebox.showinfo("Partie Solo", f"Partie solo créée ! ID Partie: {result.get('id_party')}, ID Joueur: {result.get('id_player')}")
-        list_parties()  # Rafraîchir la liste des parties
-    else:
-        messagebox.showinfo("Erreur", "Impossible de créer une partie solo.")
-
-def create_gui():
-    global parties_frame, entry_player, default_font, selected_role, selected_party_id
-    # Initialize global variable
-    selected_party_id = None
-
-def create_gui():
->>>>>>> 8fce46d5e38d8572fb2c72cf817a3e2dcc9bf4e1
     global parties_frame, entry_player, default_font, selected_role
 
     root = tk.Tk()
