@@ -47,8 +47,8 @@ def list_parties():
             main_frame = tk.Frame(parties_frame, bg=DARK_FRAME, bd=2, relief=tk.RIDGE)
             main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
             
-            # Optimiser les largeurs des colonnes - version plus compacte
-            col_widths = [3, 12, 5, 5, 5, 5, 5, 5]  # Largeurs plus compactes
+            # Modifier les largeurs des colonnes pour un affichage plus large
+            col_widths = [4, 20, 8, 8, 8, 8, 8, 8]  # Largeurs augmentées
             headers = ["Sel", "Nom", "Grille", "Joueurs", "Vill.", "Loups", "Tours", "Durée"]
 
             # Configuration du tableau avec défilement horizontal et vertical
@@ -255,7 +255,8 @@ def create_gui():
 
     root = tk.Tk()
     root.title("Client Loup-Garou")
-    root.geometry("1000x650")  # Fenêtre plus grande pour une meilleure visibilité
+    # Augmenter la taille de la fenêtre pour accommoder les tableaux plus larges
+    root.geometry("1200x700")  # Taille augmentée (ancienne: 1000x650)
     root.configure(bg=DARK_BG)
         # Rendre la fenêtre redimensionnable et gérer l'expansion des widgets
     root.grid_rowconfigure(1, weight=1)
@@ -268,8 +269,8 @@ def create_gui():
     style.configure("TButton", background=DARK_BUTTON, foreground=DARK_FG)
     style.configure("TScrollbar", background=DARK_BG, troughcolor=DARK_FRAME, arrowcolor=DARK_FG)
 
-    # Définition d'une police par défaut
-    default_font = tkFont.Font(family="Helvetica", size=11)
+    # Définition d'une police par défaut légèrement plus petite pour permettre plus de contenu
+    default_font = tkFont.Font(family="Helvetica", size=10)  # Taille réduite pour permettre plus de données
 
     # Frame titre
     title_frame = tk.Frame(root, bg=DARK_BG, pady=10)
